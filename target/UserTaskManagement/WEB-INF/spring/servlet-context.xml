@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:mvc="http://www.springframework.org/schema/mvc"
+	xmlns:context="http://www.springframework.org/schema/context" xmlns:tx="http://www.springframework.org/schema/tx"
+	xsi:schemaLocation="http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc.xsd
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+		http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-4.0.xsd">
+
+	<!-- DispatcherServlet Context: defines this servlet's request-processing 
+		infrastructure -->
+
+	<!-- Enables the Spring MVC @Controller programming model -->
+	<mvc:annotation-driven/>
+
+	<!-- Handles HTTP GET requests for /resources/** by efficiently serving 
+		up static resources in the ${webappRoot}/resources directory -->
+	<mvc:resources mapping="/resources/**" location="/resources/" />
+
+	<!-- Resolves views selected for rendering by @Controllers to .jsp resources 
+		in the /WEB-INF/views directory -->
+	<bean
+		class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+		<property name="prefix" value="/WEB-INF/pages/" />
+		<property name="suffix" value=".jsp" />
+	</bean>
+
+	
+
+	<!-- Hibernate 4 SessionFactory Bean definition -->
+	<bean id="hibernate4AnnotatedSessionFactory"
+		class="org.springframework.orm.hibernate4.LocalSessionFactoryBean">
+		<property name="dataSource" ref="dataSource" />
+		<property name="annotatedClasses">
+			<list>
+				<value>com.armen.usertaskmanagement.model.User</value>
+				<value>com.armen.usertaskmanagement.model.UserRole</value>
+				<value>com.armen.usertaskmanagement.model.Project</value>
+				<value>com.armen.usertaskmanagement.model.Task</value>
+			</list>
+		</property>
+		<property name="hibernateProperties">
+			<props>
+				<prop key="hibernate.dialect">org.hibernate.dialect.MySQLDialect
+				</prop>
+				<prop key="hibernate.show_sql">true</prop>
+			</props>
+		</property>
+	</bean>
+	
+	<bean id="userDAO" class="com.armen.usertaskmanagement.dao.UserDAOImpl">
+		<property name="sessionFactory" ref="hibernate4AnnotatedSessionFactory" />
+	</bean>
+	<bean id="userRoleDAO" class="com.armen.usertaskmanagement.dao.UserRoleDAOImpl">
+		<property name="sessionFactory" ref="hibernate4AnnotatedSessionFactory" />
+	</bean>
+	<bean id="projectDAO" class="com.armen.usertaskmanagement.dao.ProjectDAOImpl">
+		<property name="sessionFactory" ref="hibernate4AnnotatedSessionFactory" />
+	</bean>
+	<bean id="taskDAO" class="com.armen.usertaskmanagement.dao.TaskDAOImpl">
+		<property name="sessionFactory" ref="hibernate4AnnotatedSessionFactory" />
+	</bean>
+	<bean id="userService" class="com.armen.usertaskmanagement.service.UserServiceImpl">
+		<property name="userDAO" ref="userDAO"></property>
+		<property name="userRoleDAO" ref="userRoleDAO"></property>
+		<property name="taskDAO" ref="taskDAO"></property>	
+	</bean>
+	<bean id="projectService" class="com.armen.usertaskmanagement.service.ProjectServiceImpl">
+		<property name="projectDAO" ref="projectDAO"></property>
+		<property name="taskDAO" ref="taskDAO"></property>
+	</bean>
+	<bean id="taskService" class="com.armen.usertaskmanagement.service.TaskServiceImpl">
+		<property name="taskDAO" ref="taskDAO"></property>
+	</bean>
+	
+	<context:component-scan base-package="com.armen.usertaskmanagement" />
+	
+	<tx:annotation-driven transaction-manager="transactionManager"/>
+	
+	<bean id="transactionManager" class="org.springframework.orm.hibernate4.HibernateTransactionManager">
+		<property name="sessionFactory" ref="hibernate4AnnotatedSessionFactory" />
+	</bean>
+
+	<bean name="userEditor"  class="com.armen.usertaskmanagement.propertyeditors.UserEditor">
+		<property name="userService" ref="userService" ></property>
+	</bean>
+
+	<bean name="projectEditor"  class="com.armen.usertaskmanagement.propertyeditors.ProjectEditor">
+		<property name="projectService" ref="projectService" ></property>
+	</bean>
+
+
+
+</beans>
